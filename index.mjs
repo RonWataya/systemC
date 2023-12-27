@@ -4,6 +4,8 @@ import db from "./config/db.js"; // Import your database connection from db.js
 import sgMail from '@sendgrid/mail';
 import Stripe from 'stripe';
 import fetch from "node-fetch";
+import https from 'https';
+import fs from 'fs';
 
 
 
@@ -29,7 +31,13 @@ app.use(cors());
 // Set the SendGrid API key
 sgMail.setApiKey(sendgridApiKey);
 
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/moneyhive-mw.com/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/moneyhive-mw.com/fullchain.pem', 'utf8');
 
+const credentials = { key: privateKey, cert: certificate };
+
+
+const httpsServer = https.createServer(credentials, app);
 
 
 app.get("/api/users/:userId", (req, res) => {
@@ -215,8 +223,8 @@ app.post('/api/stripe', async (req, res) => {
                 },
             ],
             mode: 'payment',
-            success_url: `http://ec2-54-201-138-205.us-west-2.compute.amazonaws.com:4000/success?data=${encodedData}`,
-            cancel_url: 'http://ec2-54-201-138-205.us-west-2.compute.amazonaws.com:4000/cancel',
+            success_url: `https://moneyhive-mw.com:4000/success?data=${encodedData}`,
+            cancel_url: 'https://moneyhive-mw.com:4000/cancel',
         });
 
         // Send the session URL back to the client
@@ -281,7 +289,7 @@ async function createPayPalOrder(userId, price) {
     const encodedData = encodeURIComponent(JSON.stringify(item));
     try {
         const accessToken = await getAccessToken();
-        const successUrl = `http://ec2-54-201-138-205.us-west-2.compute.amazonaws.com:4000/success?data=${encodedData}`;
+        const successUrl = `https://moneyhive-mw.com:4000/success?data=${encodedData}`;
         const orderData = {
             intent: 'CAPTURE',
             purchase_units: [{
@@ -348,10 +356,12 @@ async function getAccessToken() {
     }
 }
 
+app.get('/cancel', (req, res) =>{
+     res.redirect('https://moneyhive-mw.com/cancel.html');
+})
 
 // set port, listen for requests
 const PORT = 4000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}.`);
-   // console.log(sendgridApiKey);
-});
+httpsServer.listen(PORT, () => {
+    console.log(`Server running on https://moneyhive-mw.com:${PORT}`);
+  })
