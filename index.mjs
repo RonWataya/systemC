@@ -31,8 +31,8 @@ app.use(cors());
 // Set the SendGrid API key
 sgMail.setApiKey(sendgridApiKey);
 
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/moneyhive-mw.com/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/moneyhive-mw.com/fullchain.pem', 'utf8');
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/malh.fun/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/malh.fun/fullchain.pem', 'utf8');
 
 const credentials = { key: privateKey, cert: certificate };
 
@@ -223,8 +223,8 @@ app.post('/api/stripe', async (req, res) => {
                 },
             ],
             mode: 'payment',
-            success_url: `https://moneyhive-mw.com:4000/success?data=${encodedData}`,
-            cancel_url: 'https://moneyhive-mw.com:4000/cancel',
+            success_url: `https://malh.fun:4000/success?data=${encodedData}`,
+            cancel_url: 'https://malh.fun:4000/cancel',
         });
 
         // Send the session URL back to the client
@@ -289,7 +289,7 @@ async function createPayPalOrder(userId, price) {
     const encodedData = encodeURIComponent(JSON.stringify(item));
     try {
         const accessToken = await getAccessToken();
-        const successUrl = `https://moneyhive-mw.com:4000/success?data=${encodedData}`;
+        const successUrl = `https://malh.fun:4000/success?data=${encodedData}`;
         const orderData = {
             intent: 'CAPTURE',
             purchase_units: [{
@@ -364,4 +364,11 @@ app.get('/cancel', (req, res) =>{
 const PORT = 4000;
 httpsServer.listen(PORT, () => {
     console.log(`Server running on https://moneyhive-mw.com:${PORT}`);
-  })
+  });
+
+/*
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}.`);
+    console.log(sendgridApiKey);
+});
+*/
