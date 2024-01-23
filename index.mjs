@@ -205,6 +205,7 @@ app.post('/api/stripe', async (req, res) => {
     const items = {
         userId: req.body.userId,
        
+       
     };
     
     try {
@@ -217,7 +218,7 @@ app.post('/api/stripe', async (req, res) => {
                         product_data: {
                             name: 'Moneyhive monthly subscription',
                         },
-                        unit_amount: 199,
+                        unit_amount: req.body.price,
                     },
                     quantity: 1,
                 },
